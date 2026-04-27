@@ -1,7 +1,7 @@
 NAME = badchess
 
 SRCS = main.cpp \
-		srcs/board.cpp
+		srcs/board.cpp srcs/piece.cpp
 
 CXX = g++ -Wall -Werror -Wextra -Iinclude -g -fsanitize=address
 
