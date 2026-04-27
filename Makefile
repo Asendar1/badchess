@@ -3,7 +3,10 @@ NAME = badchess
 SRCS = main.cpp \
 		srcs/board.cpp
 
-CXX = g++ -Wall -Werror -Wextra -Iinclude
+CXX = g++ -Wall -Werror -Wextra -Iinclude -g -fsanitize=address
+
+LIBS = -lsfml-graphics -lsfml-window -lsfml-system
+
 
 OBJS_DIR = obj
 OBJS = $(SRCS:%.cpp=$(OBJS_DIR)/%.o)
@@ -11,7 +14,7 @@ OBJS = $(SRCS:%.cpp=$(OBJS_DIR)/%.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) -o $(NAME) $(OBJS)
+	$(CXX) -o $(NAME) $(OBJS) $(LIBS)
 
 $(OBJS_DIR)/%.o: %.cpp | $(OBJS_DIR)
 	@mkdir -p $(dir $@)
