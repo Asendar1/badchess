@@ -2,6 +2,13 @@
 
 Board::Board()
 {
+	selected_piece = nullptr;
+	start_col = -1;
+	start_row = -1;
+	end_col = -1;
+	end_row = -1;
+
+
 	// White pieces
 	for (int i = 0; i < 2; i++)
 	{
@@ -98,12 +105,38 @@ void Board::gameloop()
 			if (event.type == sf::Event::Closed)
 				window.close();
 
-			window.clear(sf::Color::Black);
+			if (event.type == sf::Event::MouseButtonPressed)
+			{
+				int col = event.mouseButton.x / 112.5f;
+				int row = event.mouseButton.y / 112.5f;
 
-			window.draw(boardSprite);
-			draw_squares(window);
+				std::cout << col << " " << row << std::endl;
 
-			window.display();
+				// if a piece is selected
+				if (selected_piece != nullptr)
+				{
+					if (col > 0 && col < 8 && row > 0 && row < 8)
+					{
+						grid[row][col] = selected_piece;
+						selected_piece = nullptr;
+						break;
+					}
+				}
+
+				selected_piece = grid[row][col];
+				if (selected_piece == nullptr) {std::cout << "Nothing seleceted" << std::endl;} // user pressed on an empty square
+				else
+				{
+					start_col = col;
+					start_row = row;
+				}
+			}
 		}
+		window.clear(sf::Color::Black);
+
+		window.draw(boardSprite);
+		draw_squares(window);
+
+		window.display();
 	}
 }

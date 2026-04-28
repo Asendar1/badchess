@@ -8,13 +8,21 @@
 
 class Board
 {
-	private:
-		std::array<std::array<Piece *, 8>, 8> grid;
+private:
+	Piece *selected_piece;
+	int start_col;
+	int start_row;
+	int end_col;
+	int end_row;
 
-		void draw_squares(sf::RenderWindow& window);
-	public:
-		Board();
-		~Board();
+private:
+	std::array<std::array<Piece *, 8>, 8> grid;
 
-		void gameloop();
+	void draw_squares(sf::RenderWindow &window);
+
+public:
+	Board();
+	~Board();
+
+	void gameloop();
 };

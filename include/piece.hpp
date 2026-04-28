@@ -3,6 +3,7 @@
 
 class Piece
 {
+
 protected:
 	sf::Sprite image;
 	bool isWhite;
