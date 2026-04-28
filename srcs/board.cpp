@@ -36,14 +36,14 @@ Board::Board()
 		}
 		else
 		{
-			grid[i][0] = new Rook(false);
-			grid[i][1] = new Knight(false);
-			grid[i][2] = new Bishop(false);
-			grid[i][3] = new King(false);
-			grid[i][4] = new Queen(false);
-			grid[i][5] = new Bishop(false);
-			grid[i][6] = new Knight(false);
-			grid[i][7] = new Rook(false);
+			grid[i][0] = new Rook(true);
+			grid[i][1] = new Knight(true);
+			grid[i][2] = new Bishop(true);
+			grid[i][3] = new King(true);
+			grid[i][4] = new Queen(true);
+			grid[i][5] = new Bishop(true);
+			grid[i][6] = new Knight(true);
+			grid[i][7] = new Rook(true);
 		}
 	}
 	std::cout << "Board created" << std::endl;
