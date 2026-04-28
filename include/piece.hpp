@@ -23,11 +23,12 @@ class Pawn : public Piece
 		Pawn(bool isWhite) : Piece(isWhite), hasMoved(false)
 		{
 
-			if(!tex.loadFromFile("sprites/black_pawn.png") && !isWhite)
+			if(!tex.loadFromFile("sprites/black_pawn.png"))
 			{
 				std::cerr << "Failed to load pawn image" << std::endl;
 			}
-			image.setTexture(tex);
+			if (!isWhite)
+				image.setTexture(tex);
 		}
 		~Pawn() = default;
 };
