@@ -18,7 +18,7 @@ Board::Board()
 		}
 		if (i == 1)
 		{
-			for (auto &cell: grid[i])
+			for (auto &cell : grid[i])
 			{
 				cell = new Pawn(false);
 			}
@@ -29,9 +29,9 @@ Board::Board()
 	{
 		if (i == 6)
 		{
-			for (auto &cell: grid[i])
+			for (auto &cell : grid[i])
 			{
-				cell = new Pawn(false);
+				cell = new Pawn(true);
 			}
 		}
 		else
@@ -51,9 +51,9 @@ Board::Board()
 
 Board::~Board()
 {
-	for (auto &row: grid)
+	for (auto &row : grid)
 	{
-		for (auto &cell: row)
+		for (auto &cell : row)
 		{
 			delete cell;
 		}
@@ -65,51 +65,30 @@ Board::~Board()
 // Reducing calls from 64 to 1 but idc
 void Board::draw_squares(sf::RenderWindow &window)
 {
-	sf::RectangleShape square(sf::Vector2f(100.f, 100.f));
-
-	// brown rgb(222,184,135)
-	sf::Color brownColor(222, 184, 135);
-	square.setFillColor(brownColor);
-
-	for (int i = 0; i < 8; i++)
-	{
-		if (i % 2 == 0)
-		{
-			for (int j = 0; j * 100 < 800; j++)
-			{
-				if (j % 2 == 0)
-				{
-					square.setPosition(j * 100.f, i * 100.f);
-					window.draw(square);
-				}
-			}
-		}
-		else
-		{
-			for (int j = 0; j * 100 < 800; j++)
-			{
-				if (j % 2 == 1)
-				{
-					square.setPosition(j * 100.f, i * 100.f);
-					window.draw(square);
-				}
-			}
-		}
-	}
 
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < 8; j++)
 		{
-			if (grid[i][j] == nullptr) continue;
-			grid[i][j]->drawPiece(j * 100, i * 100, window);
+			if (grid[i][j] == nullptr)
+				continue;
+			grid[i][j]->drawPiece(j ,i , window);
 		}
 	}
 }
 
 void Board::gameloop()
 {
-	sf::RenderWindow window(sf::VideoMode(800, 800), "BadChess");
+	sf::RenderWindow window(sf::VideoMode(960, 960), "BadChess");
+
+	sf::Texture boardTex;
+	sf::Sprite boardSprite;
+
+	if (!boardTex.loadFromFile("sprites/board.png"))
+	{
+		std::cerr << "failed to load the board" << std::endl;
+	}
+	boardSprite.setTexture(boardTex);
 
 	while (window.isOpen())
 	{
@@ -121,6 +100,7 @@ void Board::gameloop()
 
 			window.clear(sf::Color::Black);
 
+			window.draw(boardSprite);
 			draw_squares(window);
 
 			window.display();

@@ -10,7 +10,7 @@ class Piece
 	public:
 		Piece(bool isWhite) : isWhite(isWhite) {}
 		virtual ~Piece() = default;
-		void drawPiece(int x, int y, sf::RenderWindow &window);
+		void drawPiece(float x, float y, sf::RenderWindow &window);
 };
 
 class Pawn : public Piece
@@ -23,12 +23,11 @@ class Pawn : public Piece
 		Pawn(bool isWhite) : Piece(isWhite), hasMoved(false)
 		{
 
-			if(!tex.loadFromFile("sprites/Pawn.png"))
+			if(!tex.loadFromFile("sprites/black_pawn.png") && !isWhite)
 			{
 				std::cerr << "Failed to load pawn image" << std::endl;
 			}
 			image.setTexture(tex);
-			std::cout << "Pawn image loaded with no errors" << std::endl;
 		}
 		~Pawn() = default;
 };
