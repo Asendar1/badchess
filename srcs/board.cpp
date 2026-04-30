@@ -1,5 +1,7 @@
 #include "board.hpp"
 
+#define hasPiece selected_piece != nullptr
+
 Board::Board()
 {
 	selected_piece = nullptr;
@@ -112,6 +114,13 @@ void Board::gameloop()
 
 				std::cout << col << " " << row << std::endl;
 
+				// cancel the selectment
+				if (selected_piece != nullptr && event.mouseButton.button == sf::Mouse::Right)
+				{
+					selected_piece = nullptr;
+					break;
+				}
+
 				// if a piece is selected
 				if (selected_piece != nullptr)
 				{
@@ -131,11 +140,18 @@ void Board::gameloop()
 					start_row = row;
 				}
 			}
+
 		}
 		window.clear(sf::Color::Black);
 
+		// draw the peice we have (if we do)
 		window.draw(boardSprite);
 		draw_squares(window);
+		if (hasPiece)
+		{
+			auto mousePos = sf::Mouse::getPosition(window);
+			selected_piece->drawPiece(mousePos.x / 120.f, mousePos.y / 120.f, window);
+		}
 
 		window.display();
 	}
