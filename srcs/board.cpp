@@ -107,9 +107,10 @@ void Board::gameloop()
 
 			if (event.type == sf::Event::MouseButtonPressed)
 			{
-				int col = event.mouseButton.x / 112.5f;
-				int row = event.mouseButton.y / 112.5f;
+				int col = event.mouseButton.x / 120.f;
+				int row = event.mouseButton.y / 120.f;
 
+				std::cout << event.mouseButton.x << " " << event.mouseButton.y << std::endl;
 				std::cout << col << " " << row << std::endl;
 
 				// if a piece is selected
