@@ -110,13 +110,12 @@ void Board::gameloop()
 				int col = event.mouseButton.x / 120.f;
 				int row = event.mouseButton.y / 120.f;
 
-				std::cout << event.mouseButton.x << " " << event.mouseButton.y << std::endl;
 				std::cout << col << " " << row << std::endl;
 
 				// if a piece is selected
 				if (selected_piece != nullptr)
 				{
-					if (col > 0 && col < 8 && row > 0 && row < 8)
+					if (col >= 0 && col < 8 && row >= 0 && row < 8)
 					{
 						grid[row][col] = selected_piece;
 						selected_piece = nullptr;
