@@ -129,6 +129,8 @@ void Board::gameloop()
 						grid[row][col] = selected_piece;
 						selected_piece = nullptr;
 						grid[start_row][start_col] = nullptr;
+						start_col = 0;
+						start_row = 0;
 						break;
 					}
 				}
