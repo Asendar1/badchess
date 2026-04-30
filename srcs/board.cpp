@@ -128,6 +128,7 @@ void Board::gameloop()
 					{
 						grid[row][col] = selected_piece;
 						selected_piece = nullptr;
+						grid[start_row][start_col] = nullptr;
 						break;
 					}
 				}
@@ -152,7 +153,6 @@ void Board::gameloop()
 			auto mousePos = sf::Mouse::getPosition(window);
 			selected_piece->drawPiece(mousePos.x / 120.f, mousePos.y / 120.f, window);
 		}
-
 		window.display();
 	}
 }
