@@ -10,7 +10,6 @@ Board::Board()
 	end_col = -1;
 	end_row = -1;
 
-
 	// White pieces
 	for (int i = 0; i < 2; i++)
 	{
@@ -81,7 +80,7 @@ void Board::draw_squares(sf::RenderWindow &window)
 		{
 			if (grid[i][j] == nullptr)
 				continue;
-			grid[i][j]->drawPiece(j ,i , window);
+			grid[i][j]->drawPiece(j, i, window);
 		}
 	}
 }
@@ -126,24 +125,30 @@ void Board::gameloop()
 				{
 					if (col >= 0 && col < 8 && row >= 0 && row < 8)
 					{
-						grid[row][col] = selected_piece;
-						selected_piece = nullptr;
-						grid[start_row][start_col] = nullptr;
-						start_col = 0;
-						start_row = 0;
+						t_moveInfo info = {start_row, start_col, col, row};
+						if (selected_piece->checkValidAndMove(info))
+						{
+							grid[row][col] = selected_piece;
+							selected_piece = nullptr;
+							grid[start_row][start_col] = nullptr;
+							start_col = 0;
+							start_row = 0;
+						}
 						break;
 					}
 				}
 
 				selected_piece = grid[row][col];
-				if (selected_piece == nullptr) {std::cout << "Nothing seleceted" << std::endl;} // user pressed on an empty square
+				if (selected_piece == nullptr)
+				{
+					std::cout << "Nothing seleceted" << std::endl;
+				} // user pressed on an empty square
 				else
 				{
 					start_col = col;
 					start_row = row;
 				}
 			}
-
 		}
 		window.clear(sf::Color::Black);
 
