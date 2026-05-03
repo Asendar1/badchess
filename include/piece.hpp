@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <array>
 
 typedef struct s_moveInfo
 {
@@ -20,7 +21,9 @@ public:
 	Piece(bool isWhite) : isWhite(isWhite) {}
 	virtual ~Piece() = default;
 	void virtual drawPiece(float x, float y, sf::RenderWindow &window);
-	int virtual checkValidAndMove(t_moveInfo &moveInfo);
+	int virtual checkValidAndMove(t_moveInfo &moveInfo, std::array<std::array<Piece *, 8>, 8> &grid);
+
+	bool getIsWhite() {return isWhite;}
 };
 
 class Pawn : public Piece
@@ -52,7 +55,7 @@ public:
 	}
 	~Pawn() = default;
 	void virtual drawPiece(float x, float y, sf::RenderWindow &window) override;
-	int virtual checkValidAndMove(t_moveInfo &moveInfo) override;
+	int virtual checkValidAndMove(t_moveInfo &moveInfo, std::array<std::array<Piece *, 8>, 8> &grid) override;
 };
 
 class Rook : public Piece

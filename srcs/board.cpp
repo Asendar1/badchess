@@ -126,7 +126,7 @@ void Board::gameloop()
 					if (col >= 0 && col < 8 && row >= 0 && row < 8)
 					{
 						t_moveInfo info = {start_row, start_col, col, row};
-						if (selected_piece->checkValidAndMove(info))
+						if (selected_piece->checkValidAndMove(info, grid))
 						{
 							grid[row][col] = selected_piece;
 							selected_piece = nullptr;

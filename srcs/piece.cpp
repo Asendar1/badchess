@@ -40,20 +40,30 @@ void Rook::drawPiece(float x, float y, sf::RenderWindow &window)
 	window.draw(image);
 }
 
-int Piece::checkValidAndMove(t_moveInfo &info)
+int Piece::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
 {
 	(void)info;
+	(void)grid;
 	return 0;
 }
 
-int Pawn::checkValidAndMove(t_moveInfo &info)
+int Pawn::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
 {
+	if (info.col != info.old_col)
+		return 0;
+
 	if (isWhite)
 	{
+		// * imma keep this but there is no way for an white pawn to capture another white pawn since they all move up
+		// if (grid[info.row][info.col] != nullptr && grid[info.row][info.col]->getIsWhite())
+		// {
+		// 	return 0;
+		// }
 		if (hasMoved)
 		{
 			if (info.old_row - 1 == info.row)
 			{
+
 				return 1;
 			}
 			else
