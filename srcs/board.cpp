@@ -100,6 +100,8 @@ void Board::gameloop()
 	}
 	boardSprite.setTexture(boardTex);
 
+
+	bool isWhiteTurn = true;
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -123,7 +125,7 @@ void Board::gameloop()
 				}
 
 				// if a piece is selected
-				if (selected_piece != nullptr)
+				if (selected_piece != nullptr && selected_piece->getIsWhite() == isWhiteTurn)
 				{
 					if (col >= 0 && col < 8 && row >= 0 && row < 8)
 					{
@@ -166,6 +168,10 @@ void Board::gameloop()
 								selected_piece = nullptr;
 								start_col = 0;
 								start_row = 0;
+								isWhiteTurn = !isWhiteTurn;
+
+								// does the move put the opponent king in check?
+
 							}
 						}
 						break;
