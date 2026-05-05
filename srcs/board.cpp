@@ -1,5 +1,7 @@
 #include "board.hpp"
 
+int isKingCheck(int king_row, int king_col, bool isWhite, std::array<std::array<Piece *, 8>, 8> &grid);
+
 #define hasPiece selected_piece != nullptr
 
 Board::Board()
@@ -128,11 +130,43 @@ void Board::gameloop()
 						t_moveInfo info = {start_row, start_col, col, row};
 						if (selected_piece->checkValidAndMove(info, grid))
 						{
+							Piece *temp = grid[info.row][info.col];
 							grid[row][col] = selected_piece;
-							selected_piece = nullptr;
 							grid[start_row][start_col] = nullptr;
-							start_col = 0;
-							start_row = 0;
+
+							int king_row = -1, king_col = -1;
+							for (int i = 0; i < 8; i++)
+							{
+								for (int j = 0; j < 8; j++)
+								{
+									if (grid[i][j] != nullptr && grid[i][j]->getIsWhite() == selected_piece->getIsWhite())
+									{
+										King *king = dynamic_cast<King *>(grid[i][j]);
+										if (king != nullptr)
+										{
+											king_row = i;
+											king_col = j;
+											break;
+										}
+									}
+								}
+								if (king_row != -1)
+									break;
+							}
+
+							if (isKingCheck(king_row, king_col, selected_piece->getIsWhite(), grid))
+							{
+								// illegal move
+								grid[row][col] = temp;
+								grid[start_row][start_col] = selected_piece;
+							}
+							else
+							{
+								// legal
+								selected_piece = nullptr;
+								start_col = 0;
+								start_row = 0;
+							}
 						}
 						break;
 					}

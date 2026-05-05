@@ -26,6 +26,23 @@ bool isPathClear(int from_row, int from_col, int to_row, int to_col,
 	return true;
 }
 
+int isKingCheck(int king_row, int king_col, bool isWhite, std::array<std::array<Piece *, 8>, 8> &grid)
+{
+	for (int row = 0; row < 8; row++)
+	{
+		for (int col = 0; col < 8; col++)
+		{
+			if (grid[row][col] != nullptr && grid[row][col]->getIsWhite() != isWhite)
+			{
+				t_moveInfo info = {row, col, king_col, king_row};
+				if (grid[row][col]->checkValidAndMove(info, grid))
+					return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 void Piece::drawPiece(float, float, sf::RenderWindow &)
 {
 }
