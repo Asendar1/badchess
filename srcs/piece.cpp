@@ -3,6 +3,10 @@
 bool isPathClear(int from_row, int from_col, int to_row, int to_col,
 				 const std::array<std::array<Piece *, 8>, 8> &grid)
 {
+	// i don't think the user can reach this point but just in case
+	if (to_row > 7 || to_row < 0 || to_col > 7 || to_col < 0)
+		return false;
+
 	// this means is row > old_row ? then 1. not bigger? then -1. Either? then 0. Same goes for col
 	int row_step = (to_row > from_row) ? 1 : (to_row < from_row) ? -1
 																 : 0;
