@@ -86,6 +86,7 @@ public:
 	}
 	~Rook() = default;
 	void virtual drawPiece(float x, float y, sf::RenderWindow &window) override;
+	int virtual checkValidAndMove(t_moveInfo &moveInfo, std::array<std::array<Piece *, 8>, 8> &grid) override;
 };
 
 class Knight : public Piece
@@ -116,6 +117,7 @@ public:
 	~Knight() = default;
 
 	void virtual drawPiece(float x, float y, sf::RenderWindow &window) override;
+	int virtual checkValidAndMove(t_moveInfo &moveInfo, std::array<std::array<Piece *, 8>, 8> &grid) override;
 };
 
 class Bishop : public Piece
@@ -145,6 +147,7 @@ public:
 	}
 	~Bishop() = default;
 	void virtual drawPiece(float x, float y, sf::RenderWindow &window) override;
+	int virtual checkValidAndMove(t_moveInfo &moveInfo, std::array<std::array<Piece *, 8>, 8> &grid) override;
 };
 
 class Queen : public Piece
@@ -174,6 +177,7 @@ public:
 	}
 	~Queen() = default;
 	void virtual drawPiece(float x, float y, sf::RenderWindow &window) override;
+	int virtual checkValidAndMove(t_moveInfo &moveInfo, std::array<std::array<Piece *, 8>, 8> &grid) override;
 };
 
 class King : public Piece
@@ -204,4 +208,5 @@ public:
 	}
 	~King() = default;
 	void virtual drawPiece(float x, float y, sf::RenderWindow &window) override;
+	int virtual checkValidAndMove(t_moveInfo &moveInfo, std::array<std::array<Piece *, 8>, 8> &grid) override;
 };

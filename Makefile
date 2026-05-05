@@ -3,7 +3,8 @@ NAME = badchess
 SRCS = main.cpp \
 		srcs/board.cpp srcs/piece.cpp
 
-CXX = g++ -Wall -Werror -Wextra -Iinclude -g -fsanitize=address
+# don't forget the -Werror
+CXX = g++ -Wall -Wextra -Iinclude -g -fsanitize=address
 
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
 

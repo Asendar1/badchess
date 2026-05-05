@@ -16,7 +16,7 @@ private:
 	int end_row;
 
 private:
-	std::array<std::array<Piece *, 8>, 8> grid;
+	std::array<std::array<Piece *, 8>, 8> grid{};
 
 	void draw_squares(sf::RenderWindow &window);
 

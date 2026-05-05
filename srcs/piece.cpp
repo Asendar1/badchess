@@ -49,65 +49,77 @@ int Piece::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>
 
 int Pawn::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
 {
+
+	int dir = isWhite ? -1 : 1;
+	int forward_one = info.old_row + dir;
+	int forward_two = info.old_row + (2 * dir);
+
+	// * Capture
+	// TODO i need a way to broadcast captures for points calculations
+	if ((info.col == info.old_col + 1 || info.col == info.old_col - 1) &&
+		info.row == forward_one && grid[info.row][info.col] != nullptr)
+	{
+		if (!(isWhite == grid[info.row][info.col]->getIsWhite()))
+			return 1;
+	}
+
+	// Pawns only move vertically (up and down)
 	if (info.col != info.old_col)
 		return 0;
 
-	if (isWhite)
-	{
-		// * imma keep this but there is no way for an white pawn to capture another white pawn since they all move up
-		// if (grid[info.row][info.col] != nullptr && grid[info.row][info.col]->getIsWhite())
-		// {
-		// 	return 0;
-		// }
-		if (hasMoved)
-		{
-			if (info.old_row - 1 == info.row)
-			{
+	if (info.row == forward_one && grid[info.row][info.col] == nullptr)
+		return 1;
 
-				return 1;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		else
-		{
-			if (info.old_row - 2 == info.row || info.old_row - 1 == info.row)
-			{
-				hasMoved = true;
-				return 1;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-	}
-	else
+	if (!hasMoved && info.row == forward_two &&
+		grid[info.row][info.col] == nullptr &&
+		grid[forward_one][info.col] == nullptr)
 	{
-		if (hasMoved)
-		{
-			if (info.old_row + 1 == info.row)
-			{
-				return 1;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		else
-		{
-			if (info.old_row + 2 == info.row || info.old_row + 1 == info.row)
-			{
-				hasMoved = true;
-				return 1;
-			}
-			else
-			{
-				return 0;
-			}
-		}
+		hasMoved = true;
+		return 1;
 	}
+
+	return 0;
+}
+
+int King::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
+{
+	// TODO add an check if the king will be attack on his move
+	bool valid_move = (std::abs(info.row - info.old_row) <= 1) &&
+					  (std::abs(info.col - info.old_col) <= 1);
+	if (!valid_move) return 0;
+
+	if (grid[info.row][info.col] == nullptr)
+		return 1;
+
+	if (!(grid[info.row][info.col]->getIsWhite() == isWhite))
+		return 1;
+	return 0;
+}
+
+int Rook::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
+{
+	(void)info;
+	(void)grid;
+	return 0;
+}
+
+int Knight::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
+{
+	(void)info;
+	(void)grid;
+	return 0;
+}
+
+int Bishop::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
+{
+	(void)info;
+	(void)grid;
+	return 0;
+}
+
+int Queen::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
+{
+	(void)info;
+	(void)grid;
+	return 0;
 }
