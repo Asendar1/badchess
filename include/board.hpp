@@ -14,11 +14,14 @@ private:
 	int start_row;
 	int end_col;
 	int end_row;
+	bool isWhiteKingInCheck;
+	bool isBlackKingInCheck;
 
 private:
 	std::array<std::array<Piece *, 8>, 8> grid{};
 
 	void draw_squares(sf::RenderWindow &window);
+	void updateCheckStatus();
 
 public:
 	Board();

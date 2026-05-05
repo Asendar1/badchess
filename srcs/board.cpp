@@ -4,6 +4,54 @@ int isKingCheck(int king_row, int king_col, bool isWhite, std::array<std::array<
 
 #define hasPiece selected_piece != nullptr
 
+void Board::updateCheckStatus()
+{
+	// Find white king
+	int white_king_row = -1, white_king_col = -1;
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (grid[i][j] != nullptr && grid[i][j]->getIsWhite())
+			{
+				King *king = dynamic_cast<King *>(grid[i][j]);
+				if (king != nullptr)
+				{
+					white_king_row = i;
+					white_king_col = j;
+					break;
+				}
+			}
+		}
+		if (white_king_row != -1)
+			break;
+	}
+
+	// Find black king
+	int black_king_row = -1, black_king_col = -1;
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (grid[i][j] != nullptr && !grid[i][j]->getIsWhite())
+			{
+				King *king = dynamic_cast<King *>(grid[i][j]);
+				if (king != nullptr)
+				{
+					black_king_row = i;
+					black_king_col = j;
+					break;
+				}
+			}
+		}
+		if (black_king_row != -1)
+			break;
+	}
+
+	isWhiteKingInCheck = isKingCheck(white_king_row, white_king_col, true, grid);
+	isBlackKingInCheck = isKingCheck(black_king_row, black_king_col, false, grid);
+}
+
 Board::Board()
 {
 	selected_piece = nullptr;
@@ -82,6 +130,17 @@ void Board::draw_squares(sf::RenderWindow &window)
 		{
 			if (grid[i][j] == nullptr)
 				continue;
+			// if iam the king and in check draw a red square
+			if (dynamic_cast<King *>(grid[i][j]) != nullptr)
+			{
+				if ((grid[i][j]->getIsWhite() && isWhiteKingInCheck) || (!grid[i][j]->getIsWhite() && isBlackKingInCheck))
+				{
+					sf::RectangleShape redSquare(sf::Vector2f(120, 120));
+					redSquare.setFillColor(sf::Color(255, 0, 0, 100)); // Red with some transparency
+					redSquare.setPosition(j * 120.f, i * 120.f);
+					window.draw(redSquare);
+				}
+			}
 			grid[i][j]->drawPiece(j, i, window);
 		}
 	}
@@ -99,7 +158,6 @@ void Board::gameloop()
 		std::cerr << "failed to load the board" << std::endl;
 	}
 	boardSprite.setTexture(boardTex);
-
 
 	bool isWhiteTurn = true;
 	while (window.isOpen())
@@ -170,11 +228,10 @@ void Board::gameloop()
 								start_row = 0;
 								isWhiteTurn = !isWhiteTurn;
 
-								// does the move put the opponent king in check?
-
+								updateCheckStatus();
 							}
+							break;
 						}
-						break;
 					}
 				}
 
@@ -192,7 +249,7 @@ void Board::gameloop()
 		}
 		window.clear(sf::Color::Black);
 
-		// draw the peice we have (if we do)
+		// draw the piece we have (if we do)
 		window.draw(boardSprite);
 		draw_squares(window);
 		if (hasPiece)
