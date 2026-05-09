@@ -148,7 +148,7 @@ void Board::draw_squares(sf::RenderWindow &window)
 
 void Board::gameloop()
 {
-	sf::RenderWindow window(sf::VideoMode(960, 960), "BadChess");
+	sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "BadChess");
 
 	sf::Texture boardTex;
 	sf::Sprite boardSprite;
@@ -224,10 +224,26 @@ void Board::gameloop()
 							{
 								// legal
 								delete temp;
-								selected_piece = nullptr;
 								start_col = 0;
 								start_row = 0;
 								isWhiteTurn = !isWhiteTurn;
+
+								// check pawn promotion
+								if (dynamic_cast<Pawn *>(selected_piece) != nullptr)
+								{
+									if (selected_piece->getIsWhite() && row == 0)
+									{
+										delete selected_piece;
+										grid[row][col] = new Queen(true);
+									}
+									else if (!selected_piece->getIsWhite() && row == 7)
+									{
+										delete selected_piece;
+										grid[row][col] = new Queen(false);
+									}
+								}
+								selected_piece = nullptr;
+
 
 								updateCheckStatus();
 							}

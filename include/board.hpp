@@ -6,6 +6,10 @@
 #include <array>
 #include <SFML/Graphics.hpp>
 
+#ifndef BOARD_SIZE
+#define BOARD_SIZE 960
+#endif
+
 class Board
 {
 private:

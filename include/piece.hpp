@@ -1,14 +1,16 @@
+#pragma once
+
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <array>
 
 typedef struct s_moveInfo
 {
-	int	old_row;
-	int	old_col;
-	int	col;
-	int	row;
-}	t_moveInfo;
+	int old_row;
+	int old_col;
+	int col;
+	int row;
+} t_moveInfo;
 
 class Piece
 {
@@ -23,7 +25,7 @@ public:
 	void virtual drawPiece(float x, float y, sf::RenderWindow &window);
 	int virtual checkValidAndMove(t_moveInfo &moveInfo, std::array<std::array<Piece *, 8>, 8> &grid);
 
-	bool getIsWhite() {return isWhite;}
+	bool getIsWhite() { return isWhite; }
 };
 
 class Pawn : public Piece

@@ -1,4 +1,5 @@
 #include "piece.hpp"
+#include "board.hpp"
 
 bool isPathClear(int from_row, int from_col, int to_row, int to_col,
 				 const std::array<std::array<Piece *, 8>, 8> &grid)
@@ -49,37 +50,37 @@ void Piece::drawPiece(float, float, sf::RenderWindow &)
 
 void Pawn::drawPiece(float x, float y, sf::RenderWindow &window)
 {
-	image.setPosition(sf::Vector2f(x * 120 + 24, y * 120 + 12));
+	image.setPosition(sf::Vector2f(x * BOARD_SIZE / 8 + 24, y * BOARD_SIZE / 8 + 12));
 	window.draw(image);
 }
 
 void Knight::drawPiece(float x, float y, sf::RenderWindow &window)
 {
-	image.setPosition(sf::Vector2f(x * 120 + 24, y * 120 + 12));
+	image.setPosition(sf::Vector2f(x * BOARD_SIZE / 8 + 24, y * BOARD_SIZE / 8 + 12));
 	window.draw(image);
 }
 
 void Bishop::drawPiece(float x, float y, sf::RenderWindow &window)
 {
-	image.setPosition(sf::Vector2f(x * 120 + 24, y * 120 + 12));
+	image.setPosition(sf::Vector2f(x * BOARD_SIZE / 8 + 24, y * BOARD_SIZE / 8 + 12));
 	window.draw(image);
 }
 
 void Queen::drawPiece(float x, float y, sf::RenderWindow &window)
 {
-	image.setPosition(sf::Vector2f(x * 120 + 24, y * 120 - 5));
+	image.setPosition(sf::Vector2f(x * BOARD_SIZE / 8 + 24, y * BOARD_SIZE / 8 - 5));
 	window.draw(image);
 }
 
 void King::drawPiece(float x, float y, sf::RenderWindow &window)
 {
-	image.setPosition(sf::Vector2f(x * 120 + 24, y * 120 - 5));
+	image.setPosition(sf::Vector2f(x * BOARD_SIZE / 8 + 24, y * BOARD_SIZE / 8 - 5));
 	window.draw(image);
 }
 
 void Rook::drawPiece(float x, float y, sf::RenderWindow &window)
 {
-	image.setPosition(sf::Vector2f(x * 120 + 24, y * 120 + 12));
+	image.setPosition(sf::Vector2f(x * BOARD_SIZE / 8 + 24, y * BOARD_SIZE / 8 + 12));
 	window.draw(image);
 }
 
