@@ -118,7 +118,6 @@ int Pawn::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>,
 		grid[info.row][info.col] == nullptr &&
 		grid[forward_one][info.col] == nullptr)
 	{
-		hasMoved = true;
 		return 1;
 	}
 

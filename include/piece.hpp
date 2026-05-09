@@ -31,10 +31,10 @@ public:
 class Pawn : public Piece
 {
 private:
-	bool hasMoved;
 	sf::Texture tex;
 
 public:
+	bool hasMoved;
 	Pawn(bool isWhite) : Piece(isWhite), hasMoved(false)
 	{
 
@@ -63,10 +63,10 @@ public:
 class Rook : public Piece
 {
 private:
-	bool hasMoved;
 	sf::Texture tex;
 
 public:
+	bool hasMoved;
 	Rook(bool isWhite) : Piece(isWhite), hasMoved(false)
 	{
 		if (!isWhite)
@@ -185,10 +185,10 @@ public:
 class King : public Piece
 {
 private:
-	bool hasMoved;
 	sf::Texture tex;
 
 public:
+	bool hasMoved;
 	King(bool isWhite) : Piece(isWhite), hasMoved(false)
 	{
 		if (!isWhite)

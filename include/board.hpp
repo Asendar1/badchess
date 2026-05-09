@@ -26,6 +26,7 @@ private:
 
 	void draw_squares(sf::RenderWindow &window);
 	void updateCheckStatus();
+	void hasLegalMoves(bool *gameEnded);
 
 public:
 	Board();
