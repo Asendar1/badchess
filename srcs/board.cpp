@@ -223,6 +223,7 @@ void Board::gameloop()
 							else
 							{
 								// legal
+								delete temp;
 								selected_piece = nullptr;
 								start_col = 0;
 								start_row = 0;
