@@ -4,6 +4,84 @@ int isKingCheck(int king_row, int king_col, bool isWhite, std::array<std::array<
 
 #define hasPiece selected_piece != nullptr
 
+bool Board::makeMove(t_moveInfo &moveInfo)
+{
+	if (selected_piece->checkValidAndMove(moveInfo, grid))
+	{
+		Piece *temp = grid[moveInfo.row][moveInfo.col];
+		grid[moveInfo.row][moveInfo.col] = selected_piece;
+		grid[start_row][start_col] = nullptr;
+
+		int king_row = -1, king_col = -1;
+		for (int i = 0; i < 8; i++)
+		{
+			for (int j = 0; j < 8; j++)
+			{
+				if (grid[i][j] != nullptr && grid[i][j]->getIsWhite() == selected_piece->getIsWhite())
+				{
+					King *king = dynamic_cast<King *>(grid[i][j]);
+					if (king != nullptr)
+					{
+						king_row = i;
+						king_col = j;
+						break;
+					}
+				}
+			}
+			if (king_row != -1)
+				break;
+		}
+
+		if (isKingCheck(king_row, king_col, selected_piece->getIsWhite(), grid))
+		{
+			// illegal move
+			grid[moveInfo.row][moveInfo.col] = temp;
+			grid[start_row][start_col] = selected_piece;
+			return false;
+		}
+		else
+		{
+			// legal
+			delete temp;
+			start_col = 0;
+			start_row = 0;
+
+			// set has move
+			if (Pawn *pawn = dynamic_cast<Pawn *>(selected_piece))
+			{
+				pawn->hasMoved = true;
+			}
+			else if (Rook *rook = dynamic_cast<Rook *>(selected_piece))
+			{
+				rook->hasMoved = true;
+			}
+			else if (King *king = dynamic_cast<King *>(selected_piece))
+			{
+				king->hasMoved = true;
+			}
+
+			// check pawn promotion
+			if (dynamic_cast<Pawn *>(selected_piece) != nullptr)
+			{
+				if (selected_piece->getIsWhite() && moveInfo.row == 0)
+				{
+					delete selected_piece;
+					grid[moveInfo.row][moveInfo.col] = new Queen(true);
+				}
+				else if (!selected_piece->getIsWhite() && moveInfo.row == 7)
+				{
+					delete selected_piece;
+					grid[moveInfo.row][moveInfo.col] = new Queen(false);
+				}
+			}
+			selected_piece = nullptr;
+
+			updateCheckStatus();
+			return true;
+		}
+	}
+	return false;
+}
 void Board::hasLegalMoves(bool *gameEnded)
 {
 	// find both kings
@@ -215,7 +293,6 @@ Board::~Board()
 // Reducing calls from 64 to 1 but idc
 void Board::draw_squares(sf::RenderWindow &window)
 {
-
 	for (int i = 0; i < 8; i++)
 	{
 		for (int j = 0; j < 8; j++)
@@ -248,9 +325,7 @@ void Board::gameloop()
 	bool gameEnded = false;
 
 	if (!boardTex.loadFromFile("sprites/board.png"))
-	{
 		std::cerr << "failed to load the board" << std::endl;
-	}
 	boardSprite.setTexture(boardTex);
 
 	bool isWhiteTurn = true;
@@ -282,88 +357,18 @@ void Board::gameloop()
 					if (col >= 0 && col < 8 && row >= 0 && row < 8)
 					{
 						t_moveInfo info = {start_row, start_col, col, row};
-						if (selected_piece->checkValidAndMove(info, grid))
+						if (makeMove(info))
 						{
-							Piece *temp = grid[info.row][info.col];
-							grid[row][col] = selected_piece;
-							grid[start_row][start_col] = nullptr;
-
-							int king_row = -1, king_col = -1;
-							for (int i = 0; i < 8; i++)
-							{
-								for (int j = 0; j < 8; j++)
-								{
-									if (grid[i][j] != nullptr && grid[i][j]->getIsWhite() == selected_piece->getIsWhite())
-									{
-										King *king = dynamic_cast<King *>(grid[i][j]);
-										if (king != nullptr)
-										{
-											king_row = i;
-											king_col = j;
-											break;
-										}
-									}
-								}
-								if (king_row != -1)
-									break;
-							}
-
-							if (isKingCheck(king_row, king_col, selected_piece->getIsWhite(), grid))
-							{
-								// illegal move
-								grid[row][col] = temp;
-								grid[start_row][start_col] = selected_piece;
-							}
-							else
-							{
-								// legal
-								delete temp;
-								start_col = 0;
-								start_row = 0;
-								isWhiteTurn = !isWhiteTurn;
-
-								// set has move
-								if (Pawn *pawn = dynamic_cast<Pawn *>(selected_piece))
-								{
-									pawn->hasMoved = true;
-								}
-								else if (Rook *rook = dynamic_cast<Rook *>(selected_piece))
-								{
-									rook->hasMoved = true;
-								}
-								else if (King *king = dynamic_cast<King *>(selected_piece))
-								{
-									king->hasMoved = true;
-								}
-
-								// check pawn promotion
-								if (dynamic_cast<Pawn *>(selected_piece) != nullptr)
-								{
-									if (selected_piece->getIsWhite() && row == 0)
-									{
-										delete selected_piece;
-										grid[row][col] = new Queen(true);
-									}
-									else if (!selected_piece->getIsWhite() && row == 7)
-									{
-										delete selected_piece;
-										grid[row][col] = new Queen(false);
-									}
-								}
-								selected_piece = nullptr;
-
-								updateCheckStatus();
-								hasLegalMoves(&gameEnded);
-							}
-							break;
+							isWhiteTurn = !isWhiteTurn;
+							hasLegalMoves(&gameEnded);
 						}
+						break;
 					}
 				}
-
 				selected_piece = grid[row][col];
 				if (selected_piece == nullptr)
 				{
-					std::cout << "Nothing seleceted" << std::endl;
+					break;
 				} // user pressed on an empty square
 				else
 				{
@@ -383,11 +388,11 @@ void Board::gameloop()
 			selected_piece->drawPiece(mousePos.x / 120.f, mousePos.y / 120.f, window);
 		}
 		window.display();
+	}
 
-		if (gameEnded)
-		{
-			window.close();
-			std::cout << "Game ended" << std::endl;
-		}
+	if (gameEnded)
+	{
+		window.close();
+		std::cout << "Game ended" << std::endl;
 	}
 }
