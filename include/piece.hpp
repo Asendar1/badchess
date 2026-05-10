@@ -35,6 +35,7 @@ private:
 
 public:
 	bool hasMoved;
+	bool hasEnPassant = false;
 	Pawn(bool isWhite) : Piece(isWhite), hasMoved(false)
 	{
 

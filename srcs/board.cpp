@@ -46,10 +46,31 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 			start_col = 0;
 			start_row = 0;
 
+			for (int i = 0; i < 8; i++)
+			{
+				for (int j = 0; j < 8; j++)
+				{
+					if (grid[i][j] != nullptr)
+					{
+						if (Pawn *pawn = dynamic_cast<Pawn *>(grid[i][j]))
+							pawn->hasEnPassant = false;
+					}
+				}
+			}
+
 			// set has move
 			if (Pawn *pawn = dynamic_cast<Pawn *>(selected_piece))
 			{
 				pawn->hasMoved = true;
+				// set en passant flag
+				if (std::abs(moveInfo.row - moveInfo.old_row) == 2)
+					pawn->hasEnPassant = true;
+				if (moveInfo.col != moveInfo.old_col && temp == nullptr)
+				{
+					delete grid[moveInfo.old_row][moveInfo.col];
+					grid[moveInfo.old_row][moveInfo.col] = nullptr;
+				}
+				// reset enpassant * this happens after move is made
 			}
 			else if (Rook *rook = dynamic_cast<Rook *>(selected_piece))
 			{
@@ -74,6 +95,7 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 					grid[moveInfo.row][moveInfo.col] = new Queen(false);
 				}
 			}
+
 			selected_piece = nullptr;
 
 			updateCheckStatus();

@@ -107,6 +107,21 @@ int Pawn::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>,
 			return 1;
 	}
 
+	// * EnPassant
+	// thing so hard coded lol
+	if (info.col == info.old_col + 1 || info.col == info.old_col - 1)
+	{
+		if (info.row == forward_one && grid[info.old_row][info.col] != nullptr)
+		{
+			Pawn *adjacent_pawn = dynamic_cast<Pawn *>(grid[info.old_row][info.col]);
+			if (adjacent_pawn != nullptr && adjacent_pawn->hasEnPassant &&
+				isWhite != adjacent_pawn->getIsWhite())
+			{
+				return 1;
+			}
+		}
+	}
+
 	// Pawns only move vertically (up and down)
 	if (info.col != info.old_col)
 		return 0;
