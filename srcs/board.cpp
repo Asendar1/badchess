@@ -79,6 +79,16 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 			else if (King *king = dynamic_cast<King *>(selected_piece))
 			{
 				king->hasMoved = true;
+				// check if we castled
+				if (std::abs(moveInfo.col - moveInfo.old_col) == 2)
+				{
+					int rook_col = (moveInfo.col > moveInfo.old_col) ? 7 : 0;
+					int new_rook_col = (moveInfo.col > moveInfo.old_col) ? moveInfo.col - 1 : moveInfo.col + 1;
+					Rook *rook = dynamic_cast<Rook *>(grid[moveInfo.old_row][rook_col]);
+					grid[moveInfo.old_row][new_rook_col] = rook;
+					grid[moveInfo.old_row][rook_col] = nullptr;
+					rook->hasMoved = true;
+				}
 			}
 
 			// check pawn promotion

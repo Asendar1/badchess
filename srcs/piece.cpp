@@ -141,7 +141,30 @@ int Pawn::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>,
 
 int King::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>, 8> &grid)
 {
-	// TODO add an check if the king will be attack on his move
+	// Castling
+	if (!hasMoved && info.row == info.old_row && std::abs(info.col - info.old_col) == 2)
+	{
+		int rook_col = (info.col > info.old_col) ? 7 : 0;
+		Rook *rook = dynamic_cast<Rook *>(grid[info.old_row][rook_col]);
+		if (rook != nullptr && !rook->hasMoved && isWhite == rook->getIsWhite())
+		{
+			// check for pieces in between
+			for (int c = std::min(info.old_col, rook_col) + 1; c < std::max(info.old_col, rook_col); c++)
+			{
+				if (grid[info.old_row][c] != nullptr)
+					return 0;
+			}
+			// check if its dangerous to castle
+			int dir = (info.col > info.old_col) ? 1 : -1;
+			for (int c = info.old_col; c != info.old_col + (dir * 3); c += dir)
+			{
+				if (isKingCheck(info.old_row, c, isWhite, grid))
+					return 0;
+			}
+			return 1;
+		}
+	}
+
 	bool valid_move = (std::abs(info.row - info.old_row) <= 1) &&
 					  (std::abs(info.col - info.old_col) <= 1);
 	if (!valid_move)
@@ -221,5 +244,3 @@ int Queen::checkValidAndMove(t_moveInfo &info, std::array<std::array<Piece *, 8>
 
 	return 0;
 }
-
-
