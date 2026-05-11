@@ -10,6 +10,22 @@
 #define BOARD_SIZE 960
 #endif
 
+struct undoMove
+{
+	t_moveInfo moveInfo;
+	Piece *movedPiece;
+	Piece *capturedPiece;
+
+	bool wasFirstMove;
+	bool wasEnPassant;
+
+	Rook *castlingRook;
+	bool wasCastling;
+
+	Piece *promotedPiece;
+	Pawn *enPassantdPawn;
+};
+
 class Board
 {
 private:
@@ -21,6 +37,8 @@ private:
 	bool isWhiteKingInCheck;
 	bool isBlackKingInCheck;
 
+	std::vector<undoMove> undoStack;
+
 private:
 	std::array<std::array<Piece *, 8>, 8> grid{};
 
@@ -28,6 +46,8 @@ private:
 	void updateCheckStatus();
 	void hasLegalMoves(bool *gameEnded);
 	bool makeMove(t_moveInfo &moveInfo);
+	void initUndoMove(undoMove &undo, t_moveInfo &moveInfo, Piece *movedPiece, Piece *capturedPiece);
+	void undoLastMove();
 
 public:
 	Board();

@@ -42,7 +42,10 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 		else
 		{
 			// legal
-			delete temp;
+			// save the moveInfo
+			undoMove undo;
+			initUndoMove(undo, moveInfo, selected_piece, temp);
+
 			start_col = 0;
 			start_row = 0;
 
@@ -53,7 +56,11 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 					if (grid[i][j] != nullptr)
 					{
 						if (Pawn *pawn = dynamic_cast<Pawn *>(grid[i][j]))
+						{
+							if (pawn->hasEnPassant)
+								undo.enPassantdPawn = pawn;
 							pawn->hasEnPassant = false;
+						}
 					}
 				}
 			}
@@ -61,24 +68,38 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 			// set has move
 			if (Pawn *pawn = dynamic_cast<Pawn *>(selected_piece))
 			{
-				pawn->hasMoved = true;
+				if (!pawn->hasMoved)
+				{
+					pawn->hasMoved = true;
+					undo.wasFirstMove = true;
+				}
 				// set en passant flag
 				if (std::abs(moveInfo.row - moveInfo.old_row) == 2)
+				{
 					pawn->hasEnPassant = true;
+				}
 				if (moveInfo.col != moveInfo.old_col && temp == nullptr)
 				{
-					delete grid[moveInfo.old_row][moveInfo.col];
+					undo.wasEnPassant = true;
+					undo.capturedPiece = grid[moveInfo.old_row][moveInfo.col];
 					grid[moveInfo.old_row][moveInfo.col] = nullptr;
 				}
-				// reset enpassant * this happens after move is made
 			}
 			else if (Rook *rook = dynamic_cast<Rook *>(selected_piece))
 			{
-				rook->hasMoved = true;
+				if (!rook->hasMoved)
+				{
+					rook->hasMoved = true;
+					undo.wasFirstMove = true;
+				}
 			}
 			else if (King *king = dynamic_cast<King *>(selected_piece))
 			{
-				king->hasMoved = true;
+				if (!king->hasMoved)
+				{
+					king->hasMoved = true;
+					undo.wasFirstMove = true;
+				}
 				// check if we castled
 				if (std::abs(moveInfo.col - moveInfo.old_col) == 2)
 				{
@@ -88,6 +109,8 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 					grid[moveInfo.old_row][new_rook_col] = rook;
 					grid[moveInfo.old_row][rook_col] = nullptr;
 					rook->hasMoved = true;
+					undo.wasCastling = true;
+					undo.castlingRook = rook;
 				}
 			}
 
@@ -96,18 +119,19 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 			{
 				if (selected_piece->getIsWhite() && moveInfo.row == 0)
 				{
-					delete selected_piece;
 					grid[moveInfo.row][moveInfo.col] = new Queen(true);
+					undo.promotedPiece = grid[moveInfo.row][moveInfo.col];
 				}
 				else if (!selected_piece->getIsWhite() && moveInfo.row == 7)
 				{
-					delete selected_piece;
 					grid[moveInfo.row][moveInfo.col] = new Queen(false);
+					undo.promotedPiece = grid[moveInfo.row][moveInfo.col];
 				}
 			}
 
 			selected_piece = nullptr;
 
+			undoStack.push_back(undo);
 			updateCheckStatus();
 			return true;
 		}
@@ -368,6 +392,13 @@ void Board::gameloop()
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
+
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Left)
+			{
+				undoLastMove();
+				isWhiteTurn = !isWhiteTurn;
+				break;
+			}
 
 			if (event.type == sf::Event::MouseButtonPressed)
 			{
