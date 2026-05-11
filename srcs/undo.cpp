@@ -114,9 +114,7 @@ std::vector<t_moveInfo> Board::getAllLegalMoves(bool isWhite)
 							}
 
 							if (!isKingCheck(k_row, k_col, isWhite, grid))
-							{
 								moveList.push_back(info);
-							}
 
 							grid[s_row][s_col] = grid[e_row][e_col];
 							grid[e_row][e_col] = temp;

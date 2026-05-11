@@ -140,79 +140,10 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 }
 void Board::hasLegalMoves(bool *gameEnded)
 {
-	// find both kings
-	// see if they have any legal moves
-	// if they don't and are checked then checkmate, otherwise stalemate
-	int white_king_row = -1, white_king_col = -1;
-	int black_king_row = -1, black_king_col = -1;
-	for (int i = 0; i < 8; i++)
-	{
-		for (int j = 0; j < 8; j++)
-		{
-			if (grid[i][j] != nullptr)
-			{
-				if (King *temp = dynamic_cast<King *>(grid[i][j]))
-				{
-					if (temp->getIsWhite())
-					{
-						white_king_row = i;
-						white_king_col = j;
-					}
-					else
-					{
-						black_king_row = i;
-						black_king_col = j;
-					}
-				}
-			}
-			if (white_king_row != -1 && black_king_row != -1)
-				break;
-		}
-	}
+	std::vector<t_moveInfo> whiteMoves = getAllLegalMoves(true);
+	std::vector<t_moveInfo> blackMoves = getAllLegalMoves(false);
 
-	// see if white or black can move
-	bool whiteHasMoves = false, blackHasMoves = false;
-	for (int s_row = 0; s_row < 8; s_row++)
-	{
-		for (int s_col = 0; s_col < 8; s_col++)
-		{
-			if (grid[s_row][s_col] != nullptr)
-			{
-				for (int e_row = 0; e_row < 8; e_row++)
-				{
-					for (int e_col = 0; e_col < 8; e_col++)
-					{
-						t_moveInfo info = {s_row, s_col, e_col, e_row};
-
-						if (grid[s_row][s_col]->checkValidAndMove(info, grid))
-						{
-							Piece *temp = grid[e_row][e_col];
-							grid[e_row][e_col] = grid[s_row][s_col];
-							grid[s_row][s_col] = nullptr;
-
-							if (grid[e_row][e_col]->getIsWhite())
-							{
-								int check_row = (dynamic_cast<King *>(grid[e_row][e_col]) != nullptr) ? e_row : white_king_row;
-								int check_col = (dynamic_cast<King *>(grid[e_row][e_col]) != nullptr) ? e_col : white_king_col;
-								if (!isKingCheck(check_row, check_col, true, grid))
-									whiteHasMoves = true;
-							}
-							else
-							{
-								int check_row = (dynamic_cast<King *>(grid[e_row][e_col]) != nullptr) ? e_row : black_king_row;
-								int check_col = (dynamic_cast<King *>(grid[e_row][e_col]) != nullptr) ? e_col : black_king_col;
-								if (!isKingCheck(check_row, check_col, false, grid))
-									blackHasMoves = true;
-							}
-							grid[s_row][s_col] = grid[e_row][e_col];
-							grid[e_row][e_col] = temp;
-						}
-					}
-				}
-			}
-		}
-	}
-	if (!whiteHasMoves)
+	if (whiteMoves.empty())
 	{
 		if (isWhiteKingInCheck)
 			std::cout << "Black wins by checkmate!" << std::endl;
@@ -220,7 +151,7 @@ void Board::hasLegalMoves(bool *gameEnded)
 			std::cout << "Stalemate! It's a draw!" << std::endl;
 		*gameEnded = true;
 	}
-	else if (!blackHasMoves)
+	else if (blackMoves.empty())
 	{
 		if (isBlackKingInCheck)
 			std::cout << "White wins by checkmate!" << std::endl;
@@ -440,6 +371,13 @@ void Board::gameloop()
 				}
 			}
 		}
+
+		if (gameEnded)
+		{
+			window.close();
+			std::cout << "Game ended" << std::endl;
+		}
+
 		window.clear(sf::Color::Black);
 
 		// draw the piece we have (if we do)
@@ -451,11 +389,5 @@ void Board::gameloop()
 			selected_piece->drawPiece(mousePos.x / 120.f, mousePos.y / 120.f, window);
 		}
 		window.display();
-	}
-
-	if (gameEnded)
-	{
-		window.close();
-		std::cout << "Game ended" << std::endl;
 	}
 }
