@@ -1,6 +1,8 @@
 #include "board.hpp"
 #include "piece.hpp"
 
+int isKingCheck(int king_row, int king_col, bool isWhite, std::array<std::array<Piece *, 8>, 8> &grid);
+
 void Board::initUndoMove(undoMove &undo, t_moveInfo &moveInfo, Piece *movedPiece, Piece *capturedPiece)
 {
 	undo.moveInfo = moveInfo;
@@ -64,4 +66,65 @@ void Board::undoLastMove()
 	if (last.enPassantdPawn)
 		last.enPassantdPawn->hasEnPassant = true;
 	updateCheckStatus();
+}
+
+#include <vector>
+
+std::vector<t_moveInfo> Board::getAllLegalMoves(bool isWhite)
+{
+	std::vector<t_moveInfo> moveList;
+
+	for (int s_row = 0; s_row < 8; s_row++)
+	{
+		for (int s_col = 0; s_col < 8; s_col++)
+		{
+			if (grid[s_row][s_col] != nullptr && grid[s_row][s_col]->getIsWhite() == isWhite)
+			{
+				for (int e_row = 0; e_row < 8; e_row++)
+				{
+					for (int e_col = 0; e_col < 8; e_col++)
+					{
+						t_moveInfo info = {s_row, s_col, e_col, e_row};
+
+						if (grid[s_row][s_col]->checkValidAndMove(info, grid))
+						{
+							Piece *temp = grid[e_row][e_col];
+							grid[e_row][e_col] = grid[s_row][s_col];
+							grid[s_row][s_col] = nullptr;
+
+							int k_row = -1, k_col = -1;
+							for (int i = 0; i < 8; i++)
+							{
+								for (int j = 0; j < 8; j++)
+								{
+									if (grid[i][j] != nullptr && grid[i][j]->getIsWhite() == isWhite)
+									{
+										if (dynamic_cast<King *>(grid[i][j]) != nullptr)
+										{
+											k_row = i;
+											k_col = j;
+											break;
+										}
+									}
+									if (k_row != -1)
+										break;
+								}
+								if (k_row != -1)
+									break;
+							}
+
+							if (!isKingCheck(k_row, k_col, isWhite, grid))
+							{
+								moveList.push_back(info);
+							}
+
+							grid[s_row][s_col] = grid[e_row][e_col];
+							grid[e_row][e_col] = temp;
+						}
+					}
+				}
+			}
+		}
+	}
+	return moveList;
 }

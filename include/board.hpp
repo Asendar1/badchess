@@ -48,6 +48,7 @@ private:
 	bool makeMove(t_moveInfo &moveInfo);
 	void initUndoMove(undoMove &undo, t_moveInfo &moveInfo, Piece *movedPiece, Piece *capturedPiece);
 	void undoLastMove();
+	std::vector<t_moveInfo> getAllLegalMoves(bool isWhite);
 
 public:
 	Board();
