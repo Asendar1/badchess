@@ -39,28 +39,28 @@ jobs:
         run: |
           mkdir -p release
 
-        # 1. Copy the game executable
-        if (Test-Path badchess.exe) { copy badchess.exe release/ } else { copy badchess release/badchess.exe }
+          # 1. Copy the game executable
+          if (Test-Path badchess.exe) { copy badchess.exe release/ } else { copy badchess release/badchess.exe }
 
-        # 2. Copy the SFML specific DLLs from our downloaded folder
-        $SFML_DIR = (Get-ChildItem -Path C:\SFML -Directory).FullName
-        copy "$SFML_DIR\bin\sfml-graphics-2.dll" release/
-        copy "$SFML_DIR\bin\sfml-window-2.dll" release/
-        copy "$SFML_DIR\bin\sfml-system-2.dll" release/
-        copy "$SFML_DIR\bin\openal32.dll" release/
+          # 2. Copy the SFML specific DLLs from our downloaded folder
+          $SFML_DIR = (Get-ChildItem -Path C:\SFML -Directory).FullName
+          copy "$SFML_DIR\bin\sfml-graphics-2.dll" release/
+          copy "$SFML_DIR\bin\sfml-window-2.dll" release/
+          copy "$SFML_DIR\bin\sfml-system-2.dll" release/
+          copy "$SFML_DIR\bin\openal32.dll" release/
 
-        # 3. Find exactly where GitHub's g++ compiler is installed!
-        $GPP_PATH = (Get-Command g++).Source
-        $GPP_DIR = Split-Path $GPP_PATH
+          # 3. Find exactly where GitHub's g++ compiler is installed!
+          $GPP_PATH = (Get-Command g++).Source
+          $GPP_DIR = Split-Path $GPP_PATH
 
-        # 4. Copy the C++ Runtime DLLs directly from the compiler's folder
-        copy "$GPP_DIR\libstdc++-6.dll" release/
-        copy "$GPP_DIR\libgcc_s_*.dll" release/
-        copy "$GPP_DIR\libwinpthread-1.dll" release/
+          # 4. Copy the C++ Runtime DLLs directly from the compiler's folder
+          copy "$GPP_DIR\libstdc++-6.dll" release/
+          copy "$GPP_DIR\libgcc_s_*.dll" release/
+          copy "$GPP_DIR\libwinpthread-1.dll" release/
 
-        # 5. Copy the sprites
-        xcopy sprites release\sprites /E /I
-      shell: pwsh
+          # 5. Copy the sprites
+          xcopy sprites release\sprites /E /I
+        shell: pwsh
 
       - name: Upload Release
         uses: actions/upload-artifact@v4
