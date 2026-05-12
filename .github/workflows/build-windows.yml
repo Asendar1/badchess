@@ -25,11 +25,11 @@ jobs:
             unzip
             curl
 
-      # 2. Download Official SFML 2.6.1 (Bypasses MSYS2's breaking SFML 3.0 update)
+      # 2. Download Official SFML 2.6.1
       - name: Download Legacy SFML
         run: |
           curl -L -o sfml.zip https://github.com/SFML/SFML/releases/download/2.6.1/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit.zip
-          unzip sfml.zip -d /c/SFML
+          unzip sfml.zip -d C:/SFML
         shell: msys2 {0}
 
       # 3. Build the game
@@ -38,9 +38,9 @@ jobs:
           # Strip ASan flag to prevent crash on user's PC
           sed -i 's/-fsanitize=address//g' Makefile
 
-          # Inject SFML 2.6 paths directly into the Makefile!
-          sed -i 's|-Iinclude|-Iinclude -I/c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/include|g' Makefile
-          sed -i 's|-lsfml-graphics|-L/c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/lib -lsfml-graphics|g' Makefile
+          # Inject the CORRECT SFML folder paths directly into the Makefile!
+          sed -i 's|-Iinclude|-Iinclude -IC:/SFML/SFML-2.6.1/include|g' Makefile
+          sed -i 's|-lsfml-graphics|-LC:/SFML/SFML-2.6.1/lib -lsfml-graphics|g' Makefile
 
           make all
         shell: msys2 {0}
@@ -58,11 +58,11 @@ jobs:
           cp /mingw64/bin/libstdc++-6.dll release/
           cp /mingw64/bin/libwinpthread-1.dll release/
 
-          # Copy SFML 2.6 DLLs from the downloaded bundle
-          cp /c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/bin/sfml-graphics-2.dll release/
-          cp /c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/bin/sfml-window-2.dll release/
-          cp /c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/bin/sfml-system-2.dll release/
-          cp /c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/bin/openal32.dll release/
+          # Copy SFML 2.6 DLLs from the exact extracted folder
+          cp C:/SFML/SFML-2.6.1/bin/sfml-graphics-2.dll release/
+          cp C:/SFML/SFML-2.6.1/bin/sfml-window-2.dll release/
+          cp C:/SFML/SFML-2.6.1/bin/sfml-system-2.dll release/
+          cp C:/SFML/SFML-2.6.1/bin/openal32.dll release/
 
           # Copy the sprites
           cp -r sprites release/
