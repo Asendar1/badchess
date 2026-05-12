@@ -36,8 +36,8 @@ jobs:
         shell: pwsh
 
       - name: Copy Files for Release
-      run: |
-        mkdir -p release
+        run: |
+          mkdir -p release
 
         # 1. Copy the game executable
         if (Test-Path badchess.exe) { copy badchess.exe release/ } else { copy badchess release/badchess.exe }
