@@ -1,0 +1,42 @@
+name: Build for Windows
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install SFML
+      run: |
+        vcpkg install sfml:x64-windows
+        vcpkg integrate install
+
+    - name: Build with Make
+      run: |
+        choco install make
+        make all
+      shell: pwsh
+
+    - name: Copy SFML DLLs
+      run: |
+        mkdir -p release
+        copy badchess.exe release/
+        copy "C:\vcpkg\installed\x64-windows\bin\sfml-graphics-3.dll" release/
+        copy "C:\vcpkg\installed\x64-windows\bin\sfml-window-3.dll" release/
+        copy "C:\vcpkg\installed\x64-windows\bin\sfml-system-3.dll" release/
+        copy "C:\vcpkg\installed\x64-windows\bin\opengl32.dll" release/ 2>$null; $true
+        xcopy sprites release\sprites /E /I
+      shell: pwsh
+
+    - name: Upload Release
+      uses: actions/upload-artifact@v3
+      with:
+        name: badchess-windows
+        path: release/
