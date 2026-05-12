@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. Install perfectly matched Compiler, Make, and SFML via MSYS2
+      # 1. Install Compiler and Make via MSYS2 (DO NOT install sfml here)
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         with:
@@ -21,40 +21,54 @@ jobs:
           update: true
           install: >-
             mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-sfml
             make
+            unzip
+            curl
 
-      # 2. Build the game using a native Linux-like bash shell
+      # 2. Download Official SFML 2.6.1 (Bypasses MSYS2's breaking SFML 3.0 update)
+      - name: Download Legacy SFML
+        run: |
+          curl -L -o sfml.zip https://github.com/SFML/SFML/releases/download/2.6.1/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit.zip
+          unzip sfml.zip -d /c/SFML
+        shell: msys2 {0}
+
+      # 3. Build the game
       - name: Build with Make
         run: |
-          # Use standard Linux 'sed' to strip the ASan flag
+          # Strip ASan flag to prevent crash on user's PC
           sed -i 's/-fsanitize=address//g' Makefile
+
+          # Inject SFML 2.6 paths directly into the Makefile!
+          sed -i 's|-Iinclude|-Iinclude -I/c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/include|g' Makefile
+          sed -i 's|-lsfml-graphics|-L/c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/lib -lsfml-graphics|g' Makefile
+
           make all
         shell: msys2 {0}
 
-      # 3. Package everything into the release folder
+      # 4. Package everything
       - name: Copy Files for Release
         run: |
           mkdir -p release
 
-          # Copy executable
+          # Copy executable safely
           if [ -f badchess.exe ]; then cp badchess.exe release/; else cp badchess release/badchess.exe; fi
 
-          # Copy DLLs exactly from the MSYS2 bin folder (Perfect ABI Match!)
-          cp /mingw64/bin/sfml-graphics-2.dll release/
-          cp /mingw64/bin/sfml-window-2.dll release/
-          cp /mingw64/bin/sfml-system-2.dll release/
-          cp /mingw64/bin/openal32.dll release/
-
+          # Copy C++ Runtime DLLs from the compiler that actually built it (MSYS2)
           cp /mingw64/bin/libgcc_s_seh-1.dll release/
           cp /mingw64/bin/libstdc++-6.dll release/
           cp /mingw64/bin/libwinpthread-1.dll release/
+
+          # Copy SFML 2.6 DLLs from the downloaded bundle
+          cp /c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/bin/sfml-graphics-2.dll release/
+          cp /c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/bin/sfml-window-2.dll release/
+          cp /c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/bin/sfml-system-2.dll release/
+          cp /c/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/bin/openal32.dll release/
 
           # Copy the sprites
           cp -r sprites release/
         shell: msys2 {0}
 
-      # 4. Upload the final ZIP!
+      # 5. Upload the final ZIP!
       - name: Upload Release
         uses: actions/upload-artifact@v4
         with:
