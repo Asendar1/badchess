@@ -13,14 +13,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install SFML
+    - name: Install dependencies
       run: |
-        vcpkg install sfml:x64-windows
-        vcpkg integrate install
+        choco install make mingw -y
+        vcpkg install sfml:x64-windows-static-md
+      shell: pwsh
 
     - name: Build with Make
       run: |
-        choco install make
+        $env:CXX = "g++ -Wall -Wextra -Werror -Iinclude -I'C:\vcpkg\installed\x64-windows-static-md\include' -L'C:\vcpkg\installed\x64-windows-static-md\lib' -g -O3"
         make all
       shell: pwsh
 
@@ -28,11 +29,11 @@ jobs:
       run: |
         mkdir -p release
         copy badchess.exe release/
-        copy "C:\vcpkg\installed\x64-windows\bin\sfml-graphics-3.dll" release/
-        copy "C:\vcpkg\installed\x64-windows\bin\sfml-window-3.dll" release/
-        copy "C:\vcpkg\installed\x64-windows\bin\sfml-system-3.dll" release/
-        copy "C:\vcpkg\installed\x64-windows\bin\opengl32.dll" release/ 2>$null; $true
-        xcopy sprites release\sprites /E /I
+        $dllPath = "C:\vcpkg\installed\x64-windows-static-md\bin"
+        if (Test-Path "$dllPath\sfml-graphics.dll") { copy "$dllPath\sfml-graphics.dll" release/ }
+        if (Test-Path "$dllPath\sfml-window.dll") { copy "$dllPath\sfml-window.dll" release/ }
+        if (Test-Path "$dllPath\sfml-system.dll") { copy "$dllPath\sfml-system.dll" release/ }
+        if (Test-Path "sprites") { xcopy sprites release\sprites /E /I }
       shell: pwsh
 
     - name: Upload Release
