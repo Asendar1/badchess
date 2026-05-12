@@ -1,10 +1,10 @@
 NAME = badchess
 
 SRCS = main.cpp \
-		srcs/board.cpp srcs/piece.cpp srcs/undo.cpp
+		srcs/board.cpp srcs/piece.cpp srcs/undo.cpp srcs/AI.cpp
 
 # don't forget the -Werror
-CXX = g++ -Wall -Wextra -Werror -Iinclude -g -fsanitize=address
+CXX = g++ -Wall -Wextra -Werror -Iinclude -g -O3 -fsanitize=address
 
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
 

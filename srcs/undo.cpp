@@ -68,8 +68,6 @@ void Board::undoLastMove()
 	updateCheckStatus();
 }
 
-#include <vector>
-
 std::vector<t_moveInfo> Board::getAllLegalMoves(bool isWhite)
 {
 	std::vector<t_moveInfo> moveList;

@@ -4,13 +4,52 @@ int isKingCheck(int king_row, int king_col, bool isWhite, std::array<std::array<
 
 #define hasPiece selected_piece != nullptr
 
+int Board::evaluateBoard()
+{
+	int score = 0;
+
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (grid[i][j] != nullptr)
+			{
+				int pieceValue = 0;
+
+				if (dynamic_cast<Pawn *>(grid[i][j]))
+					pieceValue = 10;
+				else if (dynamic_cast<Knight *>(grid[i][j]))
+					pieceValue = 30;
+				else if (dynamic_cast<Bishop *>(grid[i][j]))
+					pieceValue = 30;
+				else if (dynamic_cast<Rook *>(grid[i][j]))
+					pieceValue = 50;
+				else if (dynamic_cast<Queen *>(grid[i][j]))
+					pieceValue = 90;
+
+				// * poistive score means whites winning, vice versa
+				if (grid[i][j]->getIsWhite())
+				{
+					score += pieceValue;
+				}
+				else
+				{
+					score -= pieceValue;
+				}
+			}
+		}
+	}
+
+	return score;
+}
+
 bool Board::makeMove(t_moveInfo &moveInfo)
 {
-	if (selected_piece->checkValidAndMove(moveInfo, grid))
+	if (selected_piece && selected_piece->checkValidAndMove(moveInfo, grid))
 	{
 		Piece *temp = grid[moveInfo.row][moveInfo.col];
 		grid[moveInfo.row][moveInfo.col] = selected_piece;
-		grid[start_row][start_col] = nullptr;
+		grid[moveInfo.old_row][moveInfo.old_col] = nullptr;
 
 		int king_row = -1, king_col = -1;
 		for (int i = 0; i < 8; i++)
@@ -36,7 +75,7 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 		{
 			// illegal move
 			grid[moveInfo.row][moveInfo.col] = temp;
-			grid[start_row][start_col] = selected_piece;
+			grid[moveInfo.old_row][moveInfo.old_col] = selected_piece;
 			return false;
 		}
 		else
@@ -45,9 +84,6 @@ bool Board::makeMove(t_moveInfo &moveInfo)
 			// save the moveInfo
 			undoMove undo;
 			initUndoMove(undo, moveInfo, selected_piece, temp);
-
-			start_col = 0;
-			start_row = 0;
 
 			for (int i = 0; i < 8; i++)
 			{
@@ -360,16 +396,28 @@ void Board::gameloop()
 					}
 				}
 				selected_piece = grid[row][col];
-				if (selected_piece == nullptr)
-				{
+				if (selected_piece == nullptr) // user pressed on an empty square
 					break;
-				} // user pressed on an empty square
 				else
 				{
 					start_col = col;
 					start_row = row;
 				}
 			}
+		}
+
+		if (!isWhiteTurn && !gameEnded)
+		{
+			std::cout << "AI is thinking..." << std::endl;
+
+			t_moveInfo bestMove = findBestMove(3, false);
+
+			selected_piece = grid[bestMove.old_row][bestMove.old_col];
+			makeMove(bestMove);
+			isWhiteTurn = !isWhiteTurn;
+			hasLegalMoves(&gameEnded);
+
+			std::cout << "AI has made its move" << std::endl;
 		}
 
 		if (gameEnded)

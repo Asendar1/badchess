@@ -49,6 +49,9 @@ private:
 	void initUndoMove(undoMove &undo, t_moveInfo &moveInfo, Piece *movedPiece, Piece *capturedPiece);
 	void undoLastMove();
 	std::vector<t_moveInfo> getAllLegalMoves(bool isWhite);
+	int evaluateBoard();
+	int	minmax(int depth, bool whiteTurn);
+	t_moveInfo findBestMove(int depth, bool isWhite);
 
 public:
 	Board();
