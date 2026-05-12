@@ -2,60 +2,65 @@ name: Build for Windows
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Download Pre-compiled SFML (MinGW)
-      run: |
-        # Downloads the official SFML MinGW release instantly
-        curl -L -o sfml.zip https://github.com/SFML/SFML/releases/download/2.6.1/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit.zip
-        Expand-Archive sfml.zip -DestinationPath C:\SFML
-      shell: pwsh
+      - name: Download Pre-compiled SFML (MinGW)
+        run: |
+          # Downloads the official SFML MinGW release instantly
+          curl -L -o sfml.zip https://github.com/SFML/SFML/releases/download/2.6.1/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit.zip
+          Expand-Archive sfml.zip -DestinationPath C:\SFML
+        shell: pwsh
 
-    - name: Build with Make
-      run: |
-        choco install make
+      - name: Setup Paths & Clean Makefile
+        run: |
+          # 1. Use forward slashes! GCC on Windows hates backslashes.
+          echo "CPATH=C:/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/include" >> $env:GITHUB_ENV
+          echo "LIBRARY_PATH=C:/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/lib" >> $env:GITHUB_ENV
 
-        # These environment variables act as invisible -I and -L flags for g++
-        $env:CPATH = "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\include"
-        $env:LIBRARY_PATH = "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\lib"
+          # 2. Automatically strip Address Sanitizer so it doesn't crash your friend's PC
+          (Get-Content Makefile) -replace '-fsanitize=address', '' | Set-Content Makefile
+        shell: pwsh
 
-        make all
-      shell: pwsh
+      - name: Build with Make
+        run: |
+          choco install make
+          make all
+        shell: pwsh
 
-    - name: Copy Files for Release
-      run: |
-        mkdir -p release
+      - name: Copy Files for Release
+        run: |
+          mkdir -p release
 
-        # Note: Linux Makefiles usually spit out "badchess" without the .exe extension.
-        # Rename it here so Windows knows it's an executable!
-        copy badchess release/badchess.exe
+          # Note: Linux Makefiles usually spit out "badchess" without the .exe extension.
+          # Rename it here so Windows knows it's an executable!
+          copy badchess release/badchess.exe
 
-        # Copy the SFML DLLs we just downloaded
-        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-graphics-2.dll" release/
-        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-window-2.dll" release/
-        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-system-2.dll" release/
+          # Copy the SFML DLLs we just downloaded
+          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-graphics-2.dll" release/
+          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-window-2.dll" release/
+          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-system-2.dll" release/
 
-        # Copy the C++ Runtime DLLs (SFML bundles these in their bin folder!)
-        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libgcc_s_seh-1.dll" release/
-        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libstdc++-6.dll" release/
-        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libwinpthread-1.dll" release/
-        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\openal32.dll" release/
+          # Copy the C++ Runtime DLLs (SFML bundles these in their bin folder!)
+          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libgcc_s_seh-1.dll" release/
+          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libstdc++-6.dll" release/
+          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libwinpthread-1.dll" release/
+          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\openal32.dll" release/
 
-        # Copy the sprites
-        xcopy sprites release\sprites /E /I
-      shell: pwsh
+          # Copy the sprites
+          xcopy sprites release\sprites /E /I
+        shell: pwsh
 
-    - name: Upload Release
-      uses: actions/upload-artifact@v4
-      with:
-        name: badchess-windows
-        path: release/
+      - name: Upload Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: badchess-windows
+          path: release/
