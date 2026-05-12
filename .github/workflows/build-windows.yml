@@ -13,55 +13,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download Pre-compiled SFML (MinGW)
-        run: |
-          curl -L -o sfml.zip https://github.com/SFML/SFML/releases/download/2.6.1/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit.zip
-          Expand-Archive sfml.zip -DestinationPath C:\SFML
-        shell: pwsh
+      # 1. Install perfectly matched Compiler, Make, and SFML via MSYS2
+      - name: Setup MSYS2 Environment
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-sfml
+            make
 
+      # 2. Build the game using a native Linux-like bash shell
       - name: Build with Make
         run: |
-          # 1. Strip Address Sanitizer (We know this works!)
-          (Get-Content Makefile) -replace '-fsanitize=address', '' | Set-Content Makefile
-
-          # 2. Find the exact SFML folder dynamically
-          $SFML_DIR = (Get-ChildItem -Path C:\SFML -Directory).FullName
-
-          # 3. Set the C++ paths directly in this active session
-          $env:CPATH = "$SFML_DIR\include"
-          $env:LIBRARY_PATH = "$SFML_DIR\lib"
-
-          choco install make
+          # Use standard Linux 'sed' to strip the ASan flag
+          sed -i 's/-fsanitize=address//g' Makefile
           make all
-        shell: pwsh
+        shell: msys2 {0}
 
+      # 3. Package everything into the release folder
       - name: Copy Files for Release
         run: |
           mkdir -p release
 
-          # 1. Copy the game executable
-          if (Test-Path badchess.exe) { copy badchess.exe release/ } else { copy badchess release/badchess.exe }
+          # Copy executable
+          if [ -f badchess.exe ]; then cp badchess.exe release/; else cp badchess release/badchess.exe; fi
 
-          # 2. Copy the SFML specific DLLs from our downloaded folder
-          $SFML_DIR = (Get-ChildItem -Path C:\SFML -Directory).FullName
-          copy "$SFML_DIR\bin\sfml-graphics-2.dll" release/
-          copy "$SFML_DIR\bin\sfml-window-2.dll" release/
-          copy "$SFML_DIR\bin\sfml-system-2.dll" release/
-          copy "$SFML_DIR\bin\openal32.dll" release/
+          # Copy DLLs exactly from the MSYS2 bin folder (Perfect ABI Match!)
+          cp /mingw64/bin/sfml-graphics-2.dll release/
+          cp /mingw64/bin/sfml-window-2.dll release/
+          cp /mingw64/bin/sfml-system-2.dll release/
+          cp /mingw64/bin/openal32.dll release/
 
-          # 3. Find exactly where GitHub's g++ compiler is installed!
-          $GPP_PATH = (Get-Command g++).Source
-          $GPP_DIR = Split-Path $GPP_PATH
+          cp /mingw64/bin/libgcc_s_seh-1.dll release/
+          cp /mingw64/bin/libstdc++-6.dll release/
+          cp /mingw64/bin/libwinpthread-1.dll release/
 
-          # 4. Copy the C++ Runtime DLLs directly from the compiler's folder
-          copy "$GPP_DIR\libstdc++-6.dll" release/
-          copy "$GPP_DIR\libgcc_s_*.dll" release/
-          copy "$GPP_DIR\libwinpthread-1.dll" release/
+          # Copy the sprites
+          cp -r sprites release/
+        shell: msys2 {0}
 
-          # 5. Copy the sprites
-          xcopy sprites release\sprites /E /I
-        shell: pwsh
-
+      # 4. Upload the final ZIP!
       - name: Upload Release
         uses: actions/upload-artifact@v4
         with:
