@@ -15,23 +15,22 @@ jobs:
 
       - name: Download Pre-compiled SFML (MinGW)
         run: |
-          # Downloads the official SFML MinGW release instantly
           curl -L -o sfml.zip https://github.com/SFML/SFML/releases/download/2.6.1/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit.zip
           Expand-Archive sfml.zip -DestinationPath C:\SFML
         shell: pwsh
 
-      - name: Setup Paths & Clean Makefile
-        run: |
-          # 1. Use forward slashes! GCC on Windows hates backslashes.
-          echo "CPATH=C:/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/include" >> $env:GITHUB_ENV
-          echo "LIBRARY_PATH=C:/SFML/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/lib" >> $env:GITHUB_ENV
-
-          # 2. Automatically strip Address Sanitizer so it doesn't crash your friend's PC
-          (Get-Content Makefile) -replace '-fsanitize=address', '' | Set-Content Makefile
-        shell: pwsh
-
       - name: Build with Make
         run: |
+          # 1. Strip Address Sanitizer (We know this works!)
+          (Get-Content Makefile) -replace '-fsanitize=address', '' | Set-Content Makefile
+
+          # 2. Find the exact SFML folder dynamically
+          $SFML_DIR = (Get-ChildItem -Path C:\SFML -Directory).FullName
+
+          # 3. Set the C++ paths directly in this active session
+          $env:CPATH = "$SFML_DIR\include"
+          $env:LIBRARY_PATH = "$SFML_DIR\lib"
+
           choco install make
           make all
         shell: pwsh
@@ -40,22 +39,20 @@ jobs:
         run: |
           mkdir -p release
 
-          # Note: Linux Makefiles usually spit out "badchess" without the .exe extension.
-          # Rename it here so Windows knows it's an executable!
-          copy badchess release/badchess.exe
+          # Windows g++ sometimes appends .exe automatically, sometimes it doesn't. This safely handles both!
+          if (Test-Path badchess.exe) { copy badchess.exe release/ } else { copy badchess release/badchess.exe }
 
-          # Copy the SFML DLLs we just downloaded
-          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-graphics-2.dll" release/
-          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-window-2.dll" release/
-          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-system-2.dll" release/
+          $SFML_DIR = (Get-ChildItem -Path C:\SFML -Directory).FullName
 
-          # Copy the C++ Runtime DLLs (SFML bundles these in their bin folder!)
-          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libgcc_s_seh-1.dll" release/
-          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libstdc++-6.dll" release/
-          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libwinpthread-1.dll" release/
-          copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\openal32.dll" release/
+          copy "$SFML_DIR\bin\sfml-graphics-2.dll" release/
+          copy "$SFML_DIR\bin\sfml-window-2.dll" release/
+          copy "$SFML_DIR\bin\sfml-system-2.dll" release/
 
-          # Copy the sprites
+          copy "$SFML_DIR\bin\libgcc_s_seh-1.dll" release/
+          copy "$SFML_DIR\bin\libstdc++-6.dll" release/
+          copy "$SFML_DIR\bin\libwinpthread-1.dll" release/
+          copy "$SFML_DIR\bin\openal32.dll" release/
+
           xcopy sprites release\sprites /E /I
         shell: pwsh
 
