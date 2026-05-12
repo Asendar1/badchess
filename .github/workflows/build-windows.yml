@@ -13,27 +13,45 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Download Pre-compiled SFML (MinGW)
       run: |
-        choco install make mingw -y
-        vcpkg install sfml:x64-windows-static-md
+        # Downloads the official SFML MinGW release instantly
+        curl -L -o sfml.zip https://github.com/SFML/SFML/releases/download/2.6.1/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit.zip
+        Expand-Archive sfml.zip -DestinationPath C:\SFML
       shell: pwsh
 
     - name: Build with Make
       run: |
-        $env:CXX = "g++ -Wall -Wextra -Werror -Iinclude -I'C:\vcpkg\installed\x64-windows-static-md\include' -L'C:\vcpkg\installed\x64-windows-static-md\lib' -g -O3"
+        choco install make
+
+        # These environment variables act as invisible -I and -L flags for g++
+        $env:CPATH = "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\include"
+        $env:LIBRARY_PATH = "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\lib"
+
         make all
       shell: pwsh
 
-    - name: Copy SFML DLLs
+    - name: Copy Files for Release
       run: |
         mkdir -p release
-        copy badchess.exe release/
-        $dllPath = "C:\vcpkg\installed\x64-windows-static-md\bin"
-        if (Test-Path "$dllPath\sfml-graphics.dll") { copy "$dllPath\sfml-graphics.dll" release/ }
-        if (Test-Path "$dllPath\sfml-window.dll") { copy "$dllPath\sfml-window.dll" release/ }
-        if (Test-Path "$dllPath\sfml-system.dll") { copy "$dllPath\sfml-system.dll" release/ }
-        if (Test-Path "sprites") { xcopy sprites release\sprites /E /I }
+
+        # Note: Linux Makefiles usually spit out "badchess" without the .exe extension.
+        # Rename it here so Windows knows it's an executable!
+        copy badchess release/badchess.exe
+
+        # Copy the SFML DLLs we just downloaded
+        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-graphics-2.dll" release/
+        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-window-2.dll" release/
+        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\sfml-system-2.dll" release/
+
+        # Copy the C++ Runtime DLLs (SFML bundles these in their bin folder!)
+        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libgcc_s_seh-1.dll" release/
+        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libstdc++-6.dll" release/
+        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\libwinpthread-1.dll" release/
+        copy "C:\SFML\SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit\bin\openal32.dll" release/
+
+        # Copy the sprites
+        xcopy sprites release\sprites /E /I
       shell: pwsh
 
     - name: Upload Release
